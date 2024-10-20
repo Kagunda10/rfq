@@ -1,0 +1,168 @@
+{% schema %}
+{
+  "name": "Quote and Inquiry Form",
+  "target": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Form Title",
+      "default": "Request a Quote or Inquiry"
+    }
+  ]
+}
+{% endschema %}
+
+<div class="quote-inquiry-form">
+  <h2>{{ block.settings.title }}</h2>
+  <form id="quoteForm" class="form-section">
+    <h3>Request a Quote</h3>
+    <input type="text" name="customerName" placeholder="Your name" required>
+    <input type="email" name="customerEmail" placeholder="Your email" required>
+    <input type="tel" name="customerPhone" placeholder="Your phone number" required>
+    <textarea name="message" placeholder="Your message" required></textarea>
+    <button type="submit" class="button">Inquire</button>
+    <button type="button" class="button" id="addToQuote">Add to Quote</button>
+  </form>
+
+  <form id="inquiryForm" class="form-section">
+    <h3>Need More?</h3>
+    <input type="number" name="quantity" placeholder="How many units do you need?" required>
+    <select name="neededBy" required>
+      <option value="">When do you need them in your stock?</option>
+      <option value="asap">As soon as possible</option>
+      <option value="1week">Within 1 week</option>
+      <option value="2weeks">Within 2 weeks</option>
+      <option value="1month">Within 1 month</option>
+    </select>
+    <input type="text" name="shippingZip" placeholder="ZIP" required>
+    <input type="email" name="customerEmail" placeholder="Enter your Email" required>
+    <button type="submit" class="button">Submit Inquiry</button>
+  </form>
+
+  <button id="notifyMe" class="button">Notify Me When Available</button>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const quoteForm = document.getElementById('quoteForm');
+    const inquiryForm = document.getElementById('inquiryForm');
+    const notifyMeButton = document.getElementById('notifyMe');
+    const addToQuoteButton = document.getElementById('addToQuote');
+
+    quoteForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const formData = new FormData(quoteForm);
+      formData.append('productName', '{{ product.title }}');
+      
+      try {
+        const response = await fetch('/api/quote', {
+          method: 'POST',
+          body: formData
+        });
+        const result = await response.json();
+        if (result.success) {
+          alert('Quote request submitted successfully!');
+          quoteForm.reset();
+        } else {
+          alert('Failed to submit quote request. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+      }
+    });
+
+    inquiryForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const formData = new FormData(inquiryForm);
+      formData.append('productName', '{{ product.title }}');
+      
+      try {
+        const response = await fetch('/api/inquiry', {
+          method: 'POST',
+          body: formData
+        });
+        const result = await response.json();
+        if (result.success) {
+          alert('Inquiry submitted successfully!');
+          inquiryForm.reset();
+        } else {
+          alert('Failed to submit inquiry. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+      }
+    });
+
+    notifyMeButton.addEventListener('click', async function() {
+      const customerEmail = prompt('Please enter your email to be notified when this product becomes available:');
+      if (customerEmail) {
+        const formData = new FormData();
+        formData.append('productName', '{{ product.title }}');
+        formData.append('customerEmail', customerEmail);
+
+        try {
+          const response = await fetch('/api/notify', {
+            method: 'POST',
+            body: formData
+          });
+          const result = await response.json();
+          if (result.success) {
+            alert('You will be notified when this product becomes available.');
+          } else {
+            alert('Failed to set up notification. Please try again.');
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          alert('An error occurred. Please try again.');
+        }
+      }
+    });
+
+    addToQuoteButton.addEventListener('click', function() {
+      // Implement "Add to Quote" functionality here
+      // This could involve storing the current product in a cart-like structure for quotes
+      alert('Product added to quote. You can continue shopping or submit your quote request.');
+    });
+  });
+</script>
+
+<style>
+  .quote-inquiry-form {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f8f8f8;
+    border-radius: 8px;
+  }
+
+  .form-section {
+    margin-bottom: 20px;
+  }
+
+  .quote-inquiry-form input,
+  .quote-inquiry-form textarea,
+  .quote-inquiry-form select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+
+  .quote-inquiry-form button {
+    background-color: #c41e3a;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 10px;
+  }
+
+  .quote-inquiry-form button:hover {
+    background-color: #a51a30;
+  }
+</style>
